@@ -40,4 +40,25 @@ describe('Blog app', () => {
       expect(labelUsername).toBeVisible()
     })
   })
+
+  describe('When logged in', () => {
+    beforeEach(async ({ page }) => {
+      await page.getByTestId('inputUser').fill('admin')
+      await page.getByTestId('inputPass').fill('123')
+      await page.getByTestId('btnLogin').click()
+      await page.waitForTimeout(1000)
+    })
+  
+    test('a new blog can be created', async ({ page }) => {
+      const loginSuccess = await page.getByTestId('userInfo')
+      expect(loginSuccess).toBeVisible()
+      await page.getByTestId('btnAdd').click()
+      await page.getByTestId('inputFormTitle').fill('Title for Playwright')
+      await page.getByTestId('inputFormAuthor').fill('betaTester')
+      await page.getByTestId('inputFormUrl').fill('www.testE2E.com')
+      await page.getByTestId('btnSave').click()
+      const newBlog = await page.getByText('Title for Playwright')
+      await expect(newBlog).toBeVisible()
+    })
+  })
 })
