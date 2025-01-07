@@ -1,4 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const {loginWith,createBlog} = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page,request }) => {
@@ -22,17 +23,14 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await page.getByTestId('inputUser').fill('admin')
-      await page.getByTestId('inputPass').fill('123')
-      await page.getByRole('button', {name: 'Login'}).click()
+      await loginWith(page,'admin','123')
+      await page.waitForSelector('[data-testid="userInfo"]', { state: 'visible', timeout: 1000 })
       const loginSuccess = await page.getByTestId('userInfo')
       expect(loginSuccess).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
-      await page.getByTestId('inputUser').fill('admin')
-      await page.getByTestId('inputPass').fill('321')
-      await page.getByRole('button', {name: 'Login'}).click()
+      await loginWith(page,'admin','321')
       const labelUsername = await page.getByText('Username:')
       const loginSuccess = await page.getByTestId('userInfo')
 
@@ -43,22 +41,27 @@ describe('Blog app', () => {
 
   describe('When logged in', () => {
     beforeEach(async ({ page }) => {
-      await page.getByTestId('inputUser').fill('admin')
-      await page.getByTestId('inputPass').fill('123')
-      await page.getByTestId('btnLogin').click()
-      await page.waitForTimeout(1000)
+      await loginWith(page,'admin','123')
+      //await page.waitForTimeout(2000)
+      await page.waitForSelector('[data-testid="userInfo"]', { state: 'visible',timeout: 1000 });
     })
   
     test('a new blog can be created', async ({ page }) => {
-      const loginSuccess = await page.getByTestId('userInfo')
-      expect(loginSuccess).toBeVisible()
-      await page.getByTestId('btnAdd').click()
-      await page.getByTestId('inputFormTitle').fill('Title for Playwright')
-      await page.getByTestId('inputFormAuthor').fill('betaTester')
-      await page.getByTestId('inputFormUrl').fill('www.testE2E.com')
-      await page.getByTestId('btnSave').click()
-      const newBlog = await page.getByText('Title for Playwright')
+      createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
+      const newBlog = await page.getByText('Blog from Playwright')
       await expect(newBlog).toBeVisible()
     })
+
+    test('blog can be updated', async ({page}) => {
+      createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
+      await page.getByTestId('btnview').click()
+      const countLikes = await page.getByTestId('viewCountLikes')
+      await page.getByTestId('btnlike').click()
+      await expect(countLikes).toHaveText('1')
+    })
+
+
   })
+
+
 })
