@@ -26,7 +26,7 @@ describe('Blog app', () => {
       await loginWith(page,'admin','123')
       await page.waitForSelector('[data-testid="userInfo"]', { state: 'visible', timeout: 1000 })
       const loginSuccess = await page.getByTestId('userInfo')
-      expect(loginSuccess).toBeVisible()
+      await expect(loginSuccess).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
@@ -34,8 +34,8 @@ describe('Blog app', () => {
       const labelUsername = await page.getByText('Username:')
       const loginSuccess = await page.getByTestId('userInfo')
 
-      expect(loginSuccess).not.toBeVisible()
-      expect(labelUsername).toBeVisible()
+      await expect(loginSuccess).not.toBeVisible()
+      await expect(labelUsername).toBeVisible()
     })
   })
 
@@ -66,6 +66,25 @@ describe('Blog app', () => {
       await page.getByTestId('btnDelete').click()
       const newBlog = await page.getByText('Blog from Playwright')
       await expect(newBlog).not.toBeVisible()
+    })
+
+    test('only owner can see delete button', async ({page,request}) => { 
+      await createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
+      await page.getByTestId('btnLogout').click()
+      const tesothertUser = {
+        name:'OtherAdministrador',
+        username: 'otheradmin',
+        password: '123'
+      }
+      await request.post('http:localhost:3003/api/users',{data:tesothertUser})
+
+      await loginWith(page,'otheradmin','123')
+
+      const bview= await page.getByTestId('btnview')
+      await expect(bview).toBeVisible()
+
+      const bdelete = page.getByTestId('btnDelete')
+      await expect(bdelete).not.toBeVisible()
     })
 
   })
