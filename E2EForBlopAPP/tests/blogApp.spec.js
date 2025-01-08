@@ -47,19 +47,26 @@ describe('Blog app', () => {
     })
   
     test('a new blog can be created', async ({ page }) => {
-      createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
+      await createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
       const newBlog = await page.getByText('Blog from Playwright')
       await expect(newBlog).toBeVisible()
     })
 
     test('blog can be updated', async ({page}) => {
-      createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
+      await createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
       await page.getByTestId('btnview').click()
       const countLikes = await page.getByTestId('viewCountLikes')
       await page.getByTestId('btnlike').click()
       await expect(countLikes).toHaveText('1')
     })
 
+    test('user can delete their blogs', async ({page}) => { 
+      await createBlog(page,'Blog from Playwright','betaTester','www.testE2E.com')
+      await page.on('dialog', dialog => dialog.accept())
+      await page.getByTestId('btnDelete').click()
+      const newBlog = await page.getByText('Blog from Playwright')
+      await expect(newBlog).not.toBeVisible()
+    })
 
   })
 
