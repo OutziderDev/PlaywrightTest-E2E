@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const {loginWith,createBlog} = require('./helper')
+const {loginWith,createBlog,createAuxBlog} = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page,request }) => {
@@ -87,6 +87,21 @@ describe('Blog app', () => {
       await expect(bdelete).not.toBeVisible()
     })
 
+    test('Cheking de order of the blogs', async ({page}) => { 
+      await createBlog(page, 'Blog A', 'betaTester', 'www.testE2E.com')
+      await createAuxBlog(page, 'Blog B', 'betaTester', 'www.testE2E.com')
+      await createAuxBlog(page, 'Blog C', 'betaTester', 'www.testE2E.com')
+
+      await page.locator('[data-testid="btnview"]').nth(2).click()
+      await page.locator('[data-testid="btnlike"]').nth(2).click()
+
+      await page.locator('[data-testid="btnview"]').nth(1).click() 
+      await page.locator('[data-testid="btnlike"]').nth(1).click() 
+      await page.locator('[data-testid="btnlike"]').nth(1).click()
+
+      const blogTitles = await page.locator('[data-testid="blogTitle"]').allTextContents();
+      expect(blogTitles).toEqual(['Blog B', 'Blog C', 'Blog A']);
+    })
   })
 
 

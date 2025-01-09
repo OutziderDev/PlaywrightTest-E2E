@@ -12,4 +12,11 @@ const createBlog = async (page,title,author,url) => {
   await page.getByTestId('btnSave').click()
 }
 
-export {loginWith,createBlog}
+const createAuxBlog = async (page,title,author,url) => {
+  await page.getByTestId('inputFormTitle').fill(title)
+  await page.getByTestId('inputFormAuthor').fill(author)
+  await page.getByTestId('inputFormUrl').fill(url)
+  await page.getByTestId('btnSave').click()
+}
+
+export {loginWith,createBlog,createAuxBlog}
